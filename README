@@ -1,0 +1,69 @@
+MCU codes written mostly by me during our 1st tenure (till ARC24)
+
+
+
+
+
+Science ARC24 - 
+
+Files -
+
+Abex_ARC_24_updated:- Final ESP code used during the mission, tested well.
+All_motors_without_ROS.ino:- Probably not that useful, but just put it out there.
+Science_Sensors_Without_ROS:- Easy to debug, even on a laptop without ROS, because it prints it on the serial monitor.
+Science_all_sensors_ros:- Not sure how useful this is.
+
+General tips - 
+
+Never connect any sensor to input only pins, because they most likely will need the ESP to send Acknowledge messages.
+We had to play with traces and jumpers on the PCB, because this happened with the DHT and the DS18B20. The DHT would throw an error message on the serial monitor that said GPIO error or something, but the DS18B20 would just give its wrong default value of -127.
+
+The DS18B20 also has to have a pullup resistor, otherwise it will just give its wrong default value of -127.
+
+DHT gives proper values without ROS, but when we just upload the ROS code, 'nan' values start coming (happens only with the DHT and not any other sensor).
+
+If BMP does not begin, it will not let rosserial come, because it will constantly reset the ESP. So, it is adviced to have an ESP having code that does not include the BMP sensor (as a runner).
+It is also advised to have a lot of codes containing different fragments (an only sensors code that uses rosserial, an only sensors code using serial monitor for better debugging, a code having only motors both with rosserial and the serial monitor) for making debugging a lot simpler and faster.
+
+The Johnson motor worked with ROS, but did not work in the code having 'sensors+motors' with ROS. When the button (GUI) to move the Johnson motor was pressed, it would cause the rosserial to cut and the only way to get back rosserial was to re-upload the ESP code. So, I made a code having a button to fetch sensor data only when needed, mainly intended to make the Johnson motor work till they wanted the sensor data. This worked, but if sensor data was obtained and then the Johnson motor button was pressed, the same problem (rosserial getting cut) occured.
+This however, randomly got solved (Johnson motor would work even after sensor data was obtained). This was mostly because we removed the DS18B20 from pin 35 (INPUT only pin) and attached it to pin 13 (GPIO) (we had already changed INPUT pin 34 to GPIO 21), maybe due to issues arising with the INPUT only pin when it was asked to send an ACK.
+I also remember that this issue came back the day before the mission because we wrote to a pin different from the one that the motor was connected to, but when we fixed it, the issue went.
+
+If the data types (even bit length) of the published variable in GUI and the recieved variable in the arduino code doesn't match, things might not work eg: Servo, Stepper (Float32 was sent, but Float64 was received). In the .ino file though, we can store the received data in a variable of any data-type. 
+
+Don't use brv8825, it is a bad motor driver, use A4988. I am pretty sure it is a plug-in replacement.
+
+
+
+
+
+Limit switch PCB -
+
+Files -
+
+Neopixel_subscriber:- Subscribes to a topic to change values and also takes the kill switch's state.
+Pantilt_with_panorama:- Pretty sure that it doesn't work.
+Pantilt_panorama_neopixel_encoders:- Does all these 3 functions, it is just integrated code (the panorama part doesn't work i think).
+
+
+
+
+
+Main codes -
+
+Files -
+
+Final_ESP_S3_H_Drive_Dual_Interrupts:- ESP code which takes pwm values for 8 motors and sends it to the motors.
+
+
+
+
+
+Voice and gesture control - 
+
+Files -
+
+Drive_ESP_S3_Code_Serial_Monitor:- Code capable of switching between normal ROS operation and ESPNOW operation (the espnow commands being sent from the serial monitor).
+Serial_Monitor_Sender_test:- Sending espnow commands for moving the rover, controlled by the operator via the serial monitor.
+Drive_ESP_S3_Keyboard:- Code capable of switching between normal ROS operation and ESPNOW operation (the espnow commands being sent from a USB keyboard).
+USB_Keyboard_Sender:- Sending espnow commands for moving the rover, controlled by the operator via a USB keyboard.
